@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sh ./bin/zookeeper-server-start.sh ./config/zookeeper.properties &
+sh ./bin/zookeeper-server-start.sh ./config/zookeeper.properties
