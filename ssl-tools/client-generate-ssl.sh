@@ -2,21 +2,21 @@
 
 set -eu
 
-KEYSTORE_FILE="client.keystore.jks"
+KEYSTORE_FILE="consumer.keystore.jks"
 VALIDITY_IN_DAYS=3650
 WORKING_DIR="wd"
 
 PRIVATE_KEY_FILE="ca-key"
-ROOT_CERT_FILE="ca-crt"
+ROOT_CERT_FILE="ca-cert"
 
 CSR_FILE="csr-cert"
 CSR_SRL="ca-cert.srl"
 SIGNED_CERT_FILE="signed-cert"
 
 ROOT_CERT_ALIAS="root"
-CLIENT_CERT_ALIAS="producer"
+CLIENT_CERT_ALIAS="consumer"
 
-CN=producer
+CN=consumer
 PASS=123456
 
 rm -rf ./$WORKING_DIR

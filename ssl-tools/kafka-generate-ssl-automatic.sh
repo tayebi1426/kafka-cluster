@@ -60,7 +60,7 @@ trust_store_private_key_file=""
 
   openssl req -new -x509 -keyout $TRUSTSTORE_WORKING_DIRECTORY/ca-key \
     -out $TRUSTSTORE_WORKING_DIRECTORY/ca-cert -days $VALIDITY_IN_DAYS -nodes \
-    -subj "CN=$CN"
+    -subj "/CN=$CN"
 
   trust_store_private_key_file="$TRUSTSTORE_WORKING_DIRECTORY/ca-key"
 
@@ -88,7 +88,7 @@ trust_store_private_key_file=""
   echo "$TRUSTSTORE_WORKING_DIRECTORY/$DEFAULT_TRUSTSTORE_FILENAME was created."
 
   # don't need the cert because it's in the trust store.
-  rm $TRUSTSTORE_WORKING_DIRECTORY/$CA_CERT_FILE
+#me  rm $TRUSTSTORE_WORKING_DIRECTORY/$CA_CERT_FILE
 
 echo
 echo "Continuing with:"
@@ -143,7 +143,7 @@ echo "Now the CA will be imported into the keystore."
 echo
 keytool -keystore $KEYSTORE_WORKING_DIRECTORY/$KEYSTORE_FILENAME -alias $ROOT_CERT_ALIAS \
   -import -file $CA_CERT_FILE -keypass $PASS -storepass $PASS -noprompt
-rm $CA_CERT_FILE # delete the trust store cert because it's stored in the trust store.
+#me rm $CA_CERT_FILE # delete the trust store cert because it's stored in the trust store.
 
 echo
 echo "Now the keystore's signed certificate will be imported back into the keystore."
