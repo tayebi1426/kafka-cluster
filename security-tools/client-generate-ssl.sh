@@ -24,7 +24,7 @@ mkdir $WORKING_DIR
 
 keytool -genkey -keystore $WORKING_DIR/$KEYSTORE_FILE \
   -alias $CLIENT_CERT_ALIAS -validity $VALIDITY_IN_DAYS -keyalg RSA \
-   -noprompt -dname "CN=$CN" -keypass $PASS -storepass $PASS
+  -storetype pkcs12 -noprompt -dname "CN=$CN" -keypass $PASS -storepass $PASS
 
 keytool -certreq -keystore $WORKING_DIR/$KEYSTORE_FILE -alias $CLIENT_CERT_ALIAS \
   -file $WORKING_DIR/$CSR_FILE -keypass $PASS -storepass $PASS
@@ -46,4 +46,3 @@ keytool -export -rfc -keystore $WORKING_DIR/$KEYSTORE_FILE -alias $CLIENT_CERT_A
 rm $WORKING_DIR/$CSR_FILE
 rm $WORKING_DIR/$SIGNED_CERT_FILE
 rm $WORKING_DIR/$CSR_SRL
-

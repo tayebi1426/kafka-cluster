@@ -2,8 +2,7 @@
 
 set -eu
 
-KEYSTORE_WORKING_DIRECTORY="keystore"
-TRUSTSTORE_WORKING_DIRECTORY="truststore"
+WORKING_DIRECTORY="keystore"
 
 KEYSTORE_FILENAME="kafka.keystore.jks"
 TRUSTSTORE_FILENAME="kafka.truststore.jks"
@@ -28,8 +27,8 @@ function file_exists_and_exit() {
   exit 1
 }
 
-if [ -e "$KEYSTORE_WORKING_DIRECTORY" ]; then
-  file_exists_and_exit $KEYSTORE_WORKING_DIRECTORY
+if [ -e "$WORKING_DIRECTORY" ]; then
+  file_exists_and_exit $WORKING_DIRECTORY
 fi
 
 if [ -e "$ROOT_CERT_FILE" ]; then
@@ -48,22 +47,18 @@ if [ -e "$KEYSTORE_SIGNED_CERT" ]; then
   file_exists_and_exit $KEYSTORE_SIGNED_CERT
 fi
 
-if [ -e "$TRUSTSTORE_WORKING_DIRECTORY" ]; then
-    file_exists_and_exit $TRUSTSTORE_WORKING_DIRECTORY
-fi
 
 clear
 
 echo "Welcome to the Kafka SSL keystore and trust store generator script."
 
-keystore_path="$KEYSTORE_WORKING_DIRECTORY/$KEYSTORE_FILENAME"
-keystore_root_key_path="$KEYSTORE_WORKING_DIRECTORY/$ROOT_KEY_FILE"
+keystore_path="$WORKING_DIRECTORY/$KEYSTORE_FILENAME"
+keystore_root_key_path="$WORKING_DIRECTORY/$ROOT_KEY_FILE"
 
-truststore_path="$TRUSTSTORE_WORKING_DIRECTORY/$TRUSTSTORE_FILENAME"
-truststore_root_crt_path="$TRUSTSTORE_WORKING_DIRECTORY/$ROOT_CERT_FILE"
+truststore_path="$WORKING_DIRECTORY/$TRUSTSTORE_FILENAME"
+truststore_root_crt_path="$WORKING_DIRECTORY/$ROOT_CERT_FILE"
 
-mkdir $KEYSTORE_WORKING_DIRECTORY
-mkdir $TRUSTSTORE_WORKING_DIRECTORY
+mkdir $WORKING_DIRECTORY
 
 openssl req -new -x509 \
 	-keyout $keystore_root_key_path \
@@ -91,7 +86,7 @@ echo "           the FQDN. Some operating systems call the CN prompt 'first / la
 keytool -genkey -keyalg RSA -keystore $keystore_path \
 	-alias localhost -validity $VALIDITY_IN_DAYS \
 	-dname "CN=$CN" -ext "SAN=$CA_SAN" \
-	-noprompt -keypass $PASS -storepass $PASS
+	-storetype pkcs12 -noprompt -keypass $PASS -storepass $PASS
 
 
 #read -n1 -r -p "Press any key to continue..." key
@@ -135,5 +130,4 @@ echo "    into the keystore"
 
 rm $KEYSTORE_SIGN_REQUEST
 rm $KEYSTORE_SIGNED_CERT
-rm $TRUSTSTORE_WORKING_DIRECTORY/$KEYSTORE_SIGN_REQUEST_SRL
-
+rm $WORKING_DIRECTORY/$KEYSTORE_SIGN_REQUEST_SRL
