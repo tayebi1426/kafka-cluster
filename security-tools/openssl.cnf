@@ -1,8 +1,6 @@
 [CA_default]
 copy_extensions = copy
 
-
-
 [v3_req]
 #keyUsage = keyEncipherment, dataEncipherment
 #extendedKeyUsage = kafka-server
@@ -10,4 +8,4 @@ subjectAltName = @alt_names
 
 [alt_names]
 DNS.1 = kafka-server
-DNS.2 = 192.168.138.130
+DNS.2 = 127.0.0.1

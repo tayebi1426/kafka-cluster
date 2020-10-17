@@ -19,7 +19,8 @@ KEYSTORE_SIGNED_CERT="cert-signed"
 
 CN=root
 PASS=123456
-CA_SAN="dns:kafka-server,ip:192.168.138.130"
+CA_SAN_DNS="dns:kafka-server"
+CA_SAN_IP="ip:127.0.0.1"
 
 function file_exists_and_exit() {
   echo "'$1' cannot exist. Move or delete it before"
@@ -85,7 +86,7 @@ echo "           the FQDN. Some operating systems call the CN prompt 'first / la
 
 keytool -genkey -keyalg RSA -keystore $keystore_path \
 	-alias localhost -validity $VALIDITY_IN_DAYS \
-	-dname "CN=$CN" -ext "SAN=$CA_SAN" \
+	-dname "CN=$CN" -ext "SAN=$CA_SAN_DNS" -ext "SAN=$CA_SAN_IP" \
 	-storetype pkcs12 -noprompt -keypass $PASS -storepass $PASS
 
 
@@ -93,14 +94,14 @@ keytool -genkey -keyalg RSA -keystore $keystore_path \
 
 keytool -certreq -keystore $keystore_path -alias localhost \
 	-file $KEYSTORE_SIGN_REQUEST \
-	-dname "CN=$CN" -ext "SAN=$CA_SAN" \
+	-dname "CN=$CN" -ext "SAN=$CA_SAN_DNS" -ext "SAN=$CA_SAN_IP" \
 	-keypass $PASS -storepass $PASS
 
 
 openssl x509 -req -CAkey $keystore_root_key_path -CA $truststore_root_crt_path \
 	-in $KEYSTORE_SIGN_REQUEST -out $KEYSTORE_SIGNED_CERT \
-	-extfile openssl.cnf -extensions v3_req
-	-days $VALIDITY_IN_DAYS -CAcreateserial
+	-days $VALIDITY_IN_DAYS -CAcreateserial \
+	-extfile openssl.cnf -extensions v3_req	
 
 
 echo
@@ -115,7 +116,7 @@ echo "Now the keystore's signed certificate will be imported back into the keyst
 echo
 keytool -importcert -keystore $keystore_path -alias localhost \
 	-file $KEYSTORE_SIGNED_CERT \
-	-dname "CN=$CN" -ext "SAN=$CA_SAN" \
+	-dname "CN=$CN" -ext "SAN=$CA_SAN_DNS" -ext "SAN=$CA_SAN_IP" \
 	-keypass $PASS -storepass $PASS
 
 echo

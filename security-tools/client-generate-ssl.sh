@@ -6,8 +6,8 @@ KEYSTORE_FILE="producer.keystore.jks"
 VALIDITY_IN_DAYS=3650
 WORKING_DIR="wd"
 
-PRIVATE_KEY_FILE="root-ca.key"
-ROOT_CERT_FILE="root-ca.crt"
+PRIVATE_KEY_FILE="./keystore/root-ca.key"
+ROOT_CERT_FILE="./keystore/root-ca.crt"
 
 CSR_FILE="csr-cert"
 CSR_SRL="ca-cert.srl"
@@ -16,7 +16,7 @@ SIGNED_CERT_FILE="signed-cert"
 ROOT_CERT_ALIAS="CAroot"
 CLIENT_CERT_ALIAS="producer"
 
-CN=producer
+CN=$CLIENT_CERT_ALIAS
 PASS=123456
 
 rm -rf ./$WORKING_DIR
