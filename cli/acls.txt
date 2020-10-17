@@ -1,0 +1,1 @@
+./brokers/b0/bin/kafka-acls.sh --add --authorizer-properties zookeeper.connect=localhost:2181 --allow-principal User:CN=producer  --producer    --topic test
