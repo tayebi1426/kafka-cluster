@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 
-set -eu
+if [ $1 -lt  ]; then
+	echo "please enter client's name !"
+	exit 1
+fi
 
-KEYSTORE_FILE="producer.keystore.jks"
+set -eu
+CLIENT_CERT_ALIAS="$1"
+KEYSTORE_FILE="$CLIENT_CERT_ALIAS.keystore.jks"
 VALIDITY_IN_DAYS=3650
 WORKING_DIR="wd"
 
@@ -14,10 +19,9 @@ CSR_SRL="ca-cert.srl"
 SIGNED_CERT_FILE="signed-cert"
 
 ROOT_CERT_ALIAS="CAroot"
-CLIENT_CERT_ALIAS="producer"
 
 CN=$CLIENT_CERT_ALIAS
-PASS=123456
+PASS=$2
 
 rm -rf ./$WORKING_DIR
 mkdir $WORKING_DIR

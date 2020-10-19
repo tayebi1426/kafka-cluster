@@ -8,4 +8,4 @@ subjectAltName = @alt_names
 
 [alt_names]
 DNS.1 = kafka-server
-DNS.2 = 127.0.0.1
+IP.1 = 192.168.138.130
