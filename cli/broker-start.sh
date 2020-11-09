@@ -1,7 +1,14 @@
 #!/bin/bash
 
 clear
-BROKER_ID=0
+
+if [ $# -lt 1 ];
+then
+  echo "Wrong use: this command needs the broker id where id is 0..9"
+  exit 1
+fi
+
+BROKER_ID=$1
 SERVER_IP=192.168.138.130
 PORT="9${BROKER_ID}93"
 JMX_PORT="9${BROKER_ID}99"
@@ -10,5 +17,7 @@ MESSAGE_LOGS_DIR="/kafka-cluster/logs/b${BROKER_ID}"
 
 export LOG_DIR=$KAFKA_LOGS_DIR
 export KAFKA_HEAP_OPTS="-Xms128M -Xmx512M -Dkafka.broker${BROKER_ID}"
+
+echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 
 sh ../server/bin/kafka-server-start.sh ../server/config/server.properties --override listeners=SSL://$SERVER_IP:9003 --override broker.id=$BROKER_ID --override port=$PORT --override logs.dir=$MESSAGE_LOGS_DIR
