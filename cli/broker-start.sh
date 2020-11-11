@@ -19,4 +19,4 @@ export KAFKA_HEAP_OPTS="-Xms128M -Xmx512M -Dkafka.broker${BROKER_ID}"
 
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 
-sh ../server/bin/kafka-server-start.sh ../server/config/server.properties --override listeners=SSL://:$PORT --override broker.id=$BROKER_ID --override port=$PORT --override logs.dir=$MESSAGE_LOGS_DIR
+sh ../server/bin/kafka-server-start.sh ../server/config/server.properties --override listeners=SSL://:$PORT --override broker.id=$BROKER_ID --override port=$PORT --override log.dirs=$MESSAGE_LOGS_DIR
