@@ -15,7 +15,7 @@ KAFKA_LOGS_DIR="../logs/b${BROKER_ID}"
 MESSAGE_LOGS_DIR="/kafka-cluster/logs/b${BROKER_ID}"
 
 export LOG_DIR=$KAFKA_LOGS_DIR
-export KAFKA_HEAP_OPTS="-Xms128M -Xmx512M -Dkafka.broker${BROKER_ID}"
+export KAFKA_HEAP_OPTS="-Xms128M -Xmx4g -Dkafka.broker${BROKER_ID}"
 
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 
