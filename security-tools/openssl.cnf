@@ -7,5 +7,8 @@ copy_extensions = copy
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = kafka-server
-IP.1 = 192.168.138.130
+DNS.1 = localhost
+DNS.2 = kafka.istd.com
+DNS.3 = support.demisco.com
+IP.1 = 127.0.0.1
+IP.2 = 192.168.25.53
