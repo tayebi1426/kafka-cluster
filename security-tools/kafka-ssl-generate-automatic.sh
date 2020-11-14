@@ -4,23 +4,21 @@ set -eu
 
 WORKING_DIRECTORY="keystore"
 
-KEYSTORE_FILENAME="kafka.keystore.jks"
-TRUSTSTORE_FILENAME="kafka.truststore.jks"
+KEYSTORE_FILENAME="kafka.server.keystore.jks"
+TRUSTSTORE_FILENAME="kafka.server.truststore.jks"
 VALIDITY_IN_DAYS=3650
 
-ROOT_KEY_FILE="root-ca.key"
-ROOT_CERT_FILE="root-ca.crt"
-ROOT_CERT_ALIAS="CAroot"
+ROOT_KEY_PATH="./root-ca.key"
+ROOT_CRT_PATH="./root-ca.crt"
+ROOT_CERT_ALIAS="root-ca"
 
 KEYSTORE_SIGN_REQUEST="csr-file"
 KEYSTORE_SIGN_REQUEST_SRL="root-ca.srl"
 KEYSTORE_SIGNED_CERT="cert-signed"
 
-
 CN=root
 PASS=123456
-CA_SAN_DNS="dns:kafka-server"
-CA_SAN_IP="ip:127.0.0.1"
+SERVER_ALIAS="kafka-server-ca"
 
 function file_exists_and_exit() {
   echo "'$1' cannot exist. Move or delete it before"
@@ -32,9 +30,9 @@ if [ -e "$WORKING_DIRECTORY" ]; then
   file_exists_and_exit $WORKING_DIRECTORY
 fi
 
-if [ -e "$ROOT_CERT_FILE" ]; then
-  file_exists_and_exit $ROOT_CERT_FILE
-fi
+#if [ -e "$ROOT_CRT_PATH" ]; then
+  #file_exists_and_exit $ROOT_CRT_PATH
+#fi
 
 if [ -e "$KEYSTORE_SIGN_REQUEST" ]; then
   file_exists_and_exit $KEYSTORE_SIGN_REQUEST
@@ -54,22 +52,19 @@ clear
 echo "Welcome to the Kafka SSL keystore and trust store generator script."
 
 keystore_path="$WORKING_DIRECTORY/$KEYSTORE_FILENAME"
-keystore_root_key_path="$WORKING_DIRECTORY/$ROOT_KEY_FILE"
-
 truststore_path="$WORKING_DIRECTORY/$TRUSTSTORE_FILENAME"
-truststore_root_crt_path="$WORKING_DIRECTORY/$ROOT_CERT_FILE"
 
 mkdir $WORKING_DIRECTORY
 
-openssl req -new -x509 \
-	-keyout $keystore_root_key_path \
-	-out $truststore_root_crt_path -days $VALIDITY_IN_DAYS -nodes \
-	-subj "/CN=$CN"
+#openssl req -new -x509 \
+#	-keyout $ROOT_KEY_PATH \
+#	-out $ROOT_CRT_PATH -days $VALIDITY_IN_DAYS -nodes \
+#	-subj "/CN=$CN"
 
 keytool -importcert \
 	-keystore $truststore_path \
-	-alias $ROOT_CERT_ALIAS -file $truststore_root_crt_path \
-	-dname "CN=$CN" -noprompt -keypass $PASS -storepass $PASS 
+	-alias $ROOT_CERT_ALIAS -file $ROOT_CRT_PATH \
+	-dname "CN=$CN" -noprompt -storepass $PASS 
 
 
 echo
@@ -85,20 +80,20 @@ echo "           the FQDN. Some operating systems call the CN prompt 'first / la
 # https://docs.oracle.com/javase/7/docs/api/javax/net/ssl/X509ExtendedTrustManager.html
 
 keytool -genkey -keyalg RSA -keystore $keystore_path \
-	-alias localhost -validity $VALIDITY_IN_DAYS \
-	-dname "CN=$CN" -ext "SAN=$CA_SAN_DNS" -ext "SAN=$CA_SAN_IP" \
-	-storetype pkcs12 -noprompt -keypass $PASS -storepass $PASS
+	-alias $SERVER_ALIAS -validity $VALIDITY_IN_DAYS \
+	-dname "CN=$CN" \
+	-storetype pkcs12 -noprompt -storepass $PASS
 
 
 #read -n1 -r -p "Press any key to continue..." key
 
-keytool -certreq -keystore $keystore_path -alias localhost \
+keytool -certreq -keystore $keystore_path -alias $SERVER_ALIAS \
 	-file $KEYSTORE_SIGN_REQUEST \
-	-dname "CN=$CN" -ext "SAN=$CA_SAN_DNS" -ext "SAN=$CA_SAN_IP" \
-	-keypass $PASS -storepass $PASS
+        -storepass $PASS \
+	-dname "CN=$CN"
 
 
-openssl x509 -req -CAkey $keystore_root_key_path -CA $truststore_root_crt_path \
+openssl x509 -req -CAkey $ROOT_KEY_PATH -CA $ROOT_CRT_PATH \
 	-in $KEYSTORE_SIGN_REQUEST -out $KEYSTORE_SIGNED_CERT \
 	-days $VALIDITY_IN_DAYS -CAcreateserial \
 	-extfile openssl.cnf -extensions v3_req	
@@ -108,16 +103,20 @@ echo
 echo "Now the CARoot will be imported into the keystore."
 echo
 keytool -importcert -keystore $keystore_path -alias $ROOT_CERT_ALIAS \
--file $truststore_root_crt_path -keypass $PASS -storepass $PASS -noprompt
+-file $ROOT_CRT_PATH -storepass $PASS -noprompt
 
 
 echo
 echo "Now the keystore's signed certificate will be imported back into the keystore."
 echo
-keytool -importcert -keystore $keystore_path -alias localhost \
+keytool -importcert -keystore $keystore_path -alias $SERVER_ALIAS \
 	-file $KEYSTORE_SIGNED_CERT \
-	-dname "CN=$CN" -ext "SAN=$CA_SAN_DNS" -ext "SAN=$CA_SAN_IP" \
-	-keypass $PASS -storepass $PASS
+	-storepass $PASS\
+	-dname "CN=$CN" -noprompt
+
+keytool -exportcert -rfc -keystore $keystore_path -alias $SERVER_ALIAS \
+	-file "${SERVER_ALIAS}.crt"  \
+	-storepass $PASS
 
 echo
 echo "All done!"
@@ -131,4 +130,4 @@ echo "    into the keystore"
 
 rm $KEYSTORE_SIGN_REQUEST
 rm $KEYSTORE_SIGNED_CERT
-rm $WORKING_DIRECTORY/$KEYSTORE_SIGN_REQUEST_SRL
+rm $KEYSTORE_SIGN_REQUEST_SRL
