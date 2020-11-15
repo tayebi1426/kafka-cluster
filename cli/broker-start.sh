@@ -17,7 +17,7 @@ JMX_PORT="911${BROKER_ID}"
 KAFKA_JMX_OPTS="-Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=${JMX_PORT} -Dcom.sun.management.jmxremote.port=${JMX_PORT} -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 
 export KAFKA_JMX_OPTS=${KAFKA_JMX_OPTS}
-export LOG_DIR="./logs/b${BROKER_ID}"
+export LOG_DIR="${KAFKA_HOME}/logs/b${BROKER_ID}"
 export KAFKA_HEAP_OPTS="-Xms128M -Xmx4g -Dkafka.broker${BROKER_ID}"
 
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
