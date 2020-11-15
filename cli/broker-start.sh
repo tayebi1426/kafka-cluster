@@ -11,12 +11,15 @@ fi
 BROKER_ID=$1
 PORT="9${BROKER_ID}93"
 JMX_PORT="9${BROKER_ID}99"
-KAFKA_LOG4J_DIR="./logs/b${BROKER_ID}"
 MESSAGE_LOGS_DIR="/kafka-data/logs/b${BROKER_ID}"
+JMX_PORT="911${BROKER_ID}"
 
-export LOG_DIR=$KAFKA_LOG_DIR
+KAFKA_JMX_OPTS="-Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=${JMX_PORT} -Dcom.sun.management.jmxremote.port=${JMX_PORT} -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+
+export KAFKA_JMX_OPTS=${KAFKA_JMX_OPTS}
+export LOG_DIR="${KAFKA_HOME}/logs/b${BROKER_ID}"
 export KAFKA_HEAP_OPTS="-Xms128M -Xmx4g -Dkafka.broker${BROKER_ID}"
 
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 
-sh ./server/bin/kafka-server-start.sh ./server/config/server.properties --override listeners=SSL://:$PORT --override broker.id=$BROKER_ID --override port=$PORT --override log.dirs=$MESSAGE_LOGS_DIR
+sh ${KAFKA_HOME}/server/bin/kafka-server-start.sh ${KAFKA_HOME}/server/config/server.properties --override broker.id=$BROKER_ID --override port=$PORT --override log.dirs=$MESSAGE_LOGS_DIR
