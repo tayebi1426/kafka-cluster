@@ -115,7 +115,7 @@ keytool -importcert -keystore $keystore_path -alias $SERVER_ALIAS \
 	-dname "CN=$CN" -noprompt
 
 keytool -exportcert -rfc -keystore $keystore_path -alias $SERVER_ALIAS \
-	-file "${SERVER_ALIAS}.crt"  \
+	-file "${WORKING_DIRECTORY}/${SERVER_ALIAS}.crt"  \
 	-storepass $PASS
 
 echo
