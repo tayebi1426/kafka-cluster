@@ -7,6 +7,8 @@ then
   echo "Wrong use: this command needs the broker id where id is 0..2"
   exit 1
 fi
+EXPORT KAFKA_HOME="/kafka-cluster"
+KAFKA_HOME="/kafka-cluster"
 
 BROKER_ID=$1
 PORT="9${BROKER_ID}93"
@@ -20,6 +22,12 @@ export KAFKA_JMX_OPTS=${KAFKA_JMX_OPTS}
 export LOG_DIR="${KAFKA_HOME}/logs/b${BROKER_ID}"
 export KAFKA_HEAP_OPTS="-Xms128M -Xmx4g -Dkafka.broker${BROKER_ID}"
 
+echo "kafka home is ${KAFKA_HOME}"
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 
-sh ${KAFKA_HOME}/server/bin/kafka-server-start.sh ${KAFKA_HOME}/server/config/server.properties --override broker.id=$BROKER_ID --override port=$PORT --override log.dirs=$MESSAGE_LOGS_DIR
+sh	${KAFKA_HOME}/server/bin/kafka-server-start.sh \
+	${KAFKA_HOME}/server/config/server.properties \
+	--override listeners=SSL://kafka.istd.com:$PORT \
+	--override broker.id=$BROKER_ID \
+	--override port=$PORT \
+	--override log.dirs=$MESSAGE_LOGS_DIR
