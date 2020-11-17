@@ -7,8 +7,8 @@ then
   echo "Wrong use: this command needs the broker id where id is 0..2"
   exit 1
 fi
-EXPORT KAFKA_HOME="/kafka-cluster"
 KAFKA_HOME="/kafka-cluster"
+export KAFKA_HOME
 
 BROKER_ID=$1
 PORT="9${BROKER_ID}93"
