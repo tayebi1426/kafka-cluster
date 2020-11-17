@@ -2,3 +2,4 @@ logs/
 cli/~
 nohup.out
 *.sh~
+/logs/**
