@@ -1,4 +1,7 @@
 #!/bin/bash
 
 clear
-sh ./server/bin/zookeeper-server-start.sh ./server/config/zookeeper.properties
+
+echo "Starting Zookeeper server"
+
+nohup ./server/bin/zookeeper-server-start.sh ./server/config/zookeeper.properties >/dev/null 2>&1 &
