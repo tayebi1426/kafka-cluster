@@ -20,7 +20,7 @@ KAFKA_JMX_OPTS="-Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxrem
 
 export KAFKA_JMX_OPTS=${KAFKA_JMX_OPTS}
 export LOG_DIR="${KAFKA_HOME}/logs/b${BROKER_ID}"
-export KAFKA_HEAP_OPTS="-Xms256M -Xmx4g -Dkafka.broker${BROKER_ID}"
+export KAFKA_HEAP_OPTS="-Xms1G -Xmx1G -Dkafka.broker${BROKER_ID}"
 
 echo "kafka home is ${KAFKA_HOME}"
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
