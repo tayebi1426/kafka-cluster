@@ -28,7 +28,7 @@ echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 nohup sh \
 	${KAFKA_HOME}/server/bin/kafka-server-start.sh \
 	${KAFKA_HOME}/server/config/server.properties \
-	--override listeners=SSL://kafka.istd.com:$PORT \
+	--override listeners=SSL://:$PORT \
 	--override broker.id=$BROKER_ID \
 	--override port=$PORT \
 	--override log.dirs=$MESSAGE_LOGS_DIR \

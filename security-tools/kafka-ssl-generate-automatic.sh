@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 
+if [ $# -lt 1 ]; then
+	echo "please, enter storepass for keystore !"
+	exit 1
+fi
+
 set -eu
 
 WORKING_DIRECTORY="keystore"
 
-KEYSTORE_FILENAME="kafka.server.keystore.jks"
-TRUSTSTORE_FILENAME="kafka.server.truststore.jks"
+KEYSTORE_PATH="${WORKING_DIRECTORY}/kafka.server.keystore.jks"
+TRUSTSTORE_PATH="${WORKING_DIRECTORY}/kafka.server.truststore.jks"
+
+SERVER_ALIAS="kafka-server-ca"
+SERVER_CRT_PATH="./${SERVER_ALIAS}.crt"
+
 VALIDITY_IN_DAYS=3650
 
 ROOT_KEY_PATH="./root-ca.key"
@@ -14,11 +23,10 @@ ROOT_CERT_ALIAS="root-ca"
 
 KEYSTORE_SIGN_REQUEST="csr-file"
 KEYSTORE_SIGN_REQUEST_SRL="root-ca.srl"
-KEYSTORE_SIGNED_CERT="cert-signed"
 
 CN=root
-PASS=123456
-SERVER_ALIAS="kafka-server-ca"
+PASS=$1
+
 
 function file_exists_and_exit() {
   echo "'$1' cannot exist. Move or delete it before"
@@ -42,30 +50,28 @@ if [ -e "$KEYSTORE_SIGN_REQUEST_SRL" ]; then
   file_exists_and_exit $KEYSTORE_SIGN_REQUEST_SRL
 fi
 
-if [ -e "$KEYSTORE_SIGNED_CERT" ]; then
-  file_exists_and_exit $KEYSTORE_SIGNED_CERT
+if [ -e "$SERVER_CRT_PATH" ]; then
+  file_exists_and_exit $SERVER_CRT_PATH
 fi
-
 
 clear
 
 echo "Welcome to the Kafka SSL keystore and trust store generator script."
 
-keystore_path="$WORKING_DIRECTORY/$KEYSTORE_FILENAME"
-truststore_path="$WORKING_DIRECTORY/$TRUSTSTORE_FILENAME"
-
 mkdir $WORKING_DIRECTORY
 
-#openssl req -new -x509 \
-#	-keyout $ROOT_KEY_PATH \
-#	-out $ROOT_CRT_PATH -days $VALIDITY_IN_DAYS -nodes \
-#	-subj "/CN=$CN"
+if [ ! \( -f "${ROOT_KEY_PATH}" -a -f "${ROOT_CRT_PATH}" \) ]; then
+
+	openssl req -new -x509 \
+		-keyout $ROOT_KEY_PATH \
+		-out $ROOT_CRT_PATH -days $VALIDITY_IN_DAYS -nodes \
+		-subj "/CN=$CN"
+fi
 
 keytool -importcert \
-	-keystore $truststore_path \
+	-keystore $TRUSTSTORE_PATH \
 	-alias $ROOT_CERT_ALIAS -file $ROOT_CRT_PATH \
-	-dname "CN=$CN" -noprompt -storepass $PASS 
-
+	-storetype pkcs12 -noprompt -storepass $PASS 
 
 echo
 echo "Now, a keystore will be generated. Each broker and logical client needs its own"
@@ -79,44 +85,33 @@ echo "           the FQDN. Some operating systems call the CN prompt 'first / la
 # To learn more about CNs and FQDNs, read:
 # https://docs.oracle.com/javase/7/docs/api/javax/net/ssl/X509ExtendedTrustManager.html
 
-keytool -genkey -keyalg RSA -keystore $keystore_path \
+keytool -genkey -keyalg RSA -keystore $KEYSTORE_PATH \
 	-alias $SERVER_ALIAS -validity $VALIDITY_IN_DAYS \
 	-dname "CN=$CN" \
 	-storetype pkcs12 -noprompt -storepass $PASS
 
-
-#read -n1 -r -p "Press any key to continue..." key
-
-keytool -certreq -keystore $keystore_path -alias $SERVER_ALIAS \
+keytool -certreq -keystore $KEYSTORE_PATH -alias $SERVER_ALIAS \
 	-file $KEYSTORE_SIGN_REQUEST \
-        -storepass $PASS \
-	-dname "CN=$CN"
-
+        -storepass $PASS
 
 openssl x509 -req -CAkey $ROOT_KEY_PATH -CA $ROOT_CRT_PATH \
-	-in $KEYSTORE_SIGN_REQUEST -out $KEYSTORE_SIGNED_CERT \
+	-in $KEYSTORE_SIGN_REQUEST -out $SERVER_CRT_PATH \
 	-days $VALIDITY_IN_DAYS -CAcreateserial \
 	-extfile openssl.cnf -extensions v3_req	
-
 
 echo
 echo "Now the CARoot will be imported into the keystore."
 echo
-keytool -importcert -keystore $keystore_path -alias $ROOT_CERT_ALIAS \
--file $ROOT_CRT_PATH -storepass $PASS -noprompt
 
+keytool -importcert -keystore $KEYSTORE_PATH -alias $ROOT_CERT_ALIAS \
+-file $ROOT_CRT_PATH -noprompt -storepass $PASS
 
 echo
 echo "Now the keystore's signed certificate will be imported back into the keystore."
 echo
-keytool -importcert -keystore $keystore_path -alias $SERVER_ALIAS \
-	-file $KEYSTORE_SIGNED_CERT \
-	-storepass $PASS\
-	-dname "CN=$CN" -noprompt
 
-keytool -exportcert -rfc -keystore $keystore_path -alias $SERVER_ALIAS \
-	-file "${WORKING_DIRECTORY}/${SERVER_ALIAS}.crt"  \
-	-storepass $PASS
+keytool -importcert -keystore $KEYSTORE_PATH -alias $SERVER_ALIAS \
+	-file $SERVER_CRT_PATH -storepass $PASS
 
 echo
 echo "All done!"
@@ -125,9 +120,7 @@ echo "Deleting intermediate files. They are:"
 echo " - '$KEYSTORE_SIGN_REQUEST_SRL': CA serial number"
 echo " - '$KEYSTORE_SIGN_REQUEST': the keystore's certificate signing request"
 echo "   (that was fulfilled)"
-echo " - '$KEYSTORE_SIGNED_CERT': the keystore's certificate, signed by the CA, and stored back"
-echo "    into the keystore"
 
+rm $SERVER_CRT_PATH
 rm $KEYSTORE_SIGN_REQUEST
-rm $KEYSTORE_SIGNED_CERT
 rm $KEYSTORE_SIGN_REQUEST_SRL
