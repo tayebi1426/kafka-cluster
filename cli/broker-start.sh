@@ -30,6 +30,5 @@ nohup sh \
 	${KAFKA_HOME}/server/config/server.properties \
 	--override listeners=SSL://:$PORT \
 	--override broker.id=$BROKER_ID \
-	--override port=$PORT \
 	--override log.dirs=$MESSAGE_LOGS_DIR \
 >/dev/null 2>&1 & # runs in background, doesn't create nohup.out
