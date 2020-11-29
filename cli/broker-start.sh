@@ -25,10 +25,10 @@ export KAFKA_HEAP_OPTS="-Xms1G -Xmx1G -Dkafka.broker${BROKER_ID}"
 echo "kafka home is ${KAFKA_HOME}"
 echo "Starting Broker with id ${BROKER_ID} on port ${PORT}"
 
-nohup sh \
+#nohup sh \
 	${KAFKA_HOME}/server/bin/kafka-server-start.sh \
 	${KAFKA_HOME}/server/config/server.properties \
 	--override listeners=SSL://:$PORT \
 	--override broker.id=$BROKER_ID \
 	--override log.dirs=$MESSAGE_LOGS_DIR \
->/dev/null 2>&1 & # runs in background, doesn't create nohup.out
+#>/dev/null 2>&1 & # runs in background, doesn't create nohup.out
